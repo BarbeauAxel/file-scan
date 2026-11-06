@@ -7,12 +7,14 @@ interface ResultsProps {
   json: string
   fileName: string
   /** Avertissement non bloquant (ex. structuration LLM échouée, repli sur l'OCR seul). */
-  notice?: string | null
+  notice?: { tone: 'info' | 'error'; message: string } | null
+  /** Action proposée à côté de l'avertissement (ex. relancer la structuration). */
+  onRetry?: () => void
 }
 
 type Tab = 'json' | 'text'
 
-export default function Results({ pages, json, fileName, notice }: ResultsProps) {
+export default function Results({ pages, json, fileName, notice, onRetry }: ResultsProps) {
   const [tab, setTab] = useState<Tab>('json')
   const [copied, setCopied] = useState<'ok' | 'error' | null>(null)
 
@@ -44,7 +46,22 @@ export default function Results({ pages, json, fileName, notice }: ResultsProps)
 
   return (
     <section className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm" aria-label="Résultats">
-      {notice && <p className="mb-3 rounded-lg bg-amber-50 px-3 py-2 text-sm text-amber-800">{notice}</p>}
+      {notice && (
+        <div
+          role={notice.tone === 'error' ? 'alert' : 'status'}
+          className={[
+            'mb-3 flex flex-wrap items-center justify-between gap-2 rounded-lg px-3 py-2 text-sm',
+            notice.tone === 'error' ? 'bg-red-50 text-red-700' : 'bg-amber-50 text-amber-800',
+          ].join(' ')}
+        >
+          <span data-testid="notice">{notice.message}</span>
+          {onRetry && (
+            <button type="button" onClick={onRetry} className="rounded-md border border-current px-2 py-1 text-xs font-medium">
+              Relancer la structuration
+            </button>
+          )}
+        </div>
+      )}
       <div className="flex flex-wrap items-end justify-between gap-2 border-b border-slate-200">
         <div role="tablist" className="flex">
           <button role="tab" aria-selected={tab === 'json'} className={tabClass('json')} onClick={() => setTab('json')}>

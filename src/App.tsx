@@ -4,19 +4,21 @@ import ProgressBar from './components/ProgressBar'
 import Results from './components/Results'
 import Settings from './components/Settings'
 import { isAbortError, toUserMessage } from './lib/errors'
-import type { OcrProgress } from './ocr'
-import { runScan, type ScanResult } from './pipeline'
+import type { OcrPage, OcrProgress } from './ocr'
+import { runScan, structurePages, type ScanContext, type ScanResult, type ScanStep } from './pipeline'
+import { useKeys } from './storage/keys'
 import { loadSettings, saveSettings, type Settings as SettingsValue } from './storage/settings'
 
 type Status =
   | { phase: 'idle' }
-  | { phase: 'running'; step: 'ocr' | 'llm'; progress: OcrProgress | null }
+  | { phase: 'running'; step: ScanStep; progress: OcrProgress | null }
   | { phase: 'done'; result: ScanResult }
   | { phase: 'error'; message: string }
 
 export default function App() {
   const [file, setFile] = useState<File | null>(null)
   const [settings, setSettings] = useState<SettingsValue>(loadSettings)
+  const keyStore = useKeys()
   const [status, setStatus] = useState<Status>({ phase: 'idle' })
   const abortRef = useRef<AbortController | null>(null)
 
@@ -25,18 +27,17 @@ export default function App() {
 
   const running = status.phase === 'running'
 
-  async function scan() {
-    if (!file) return
+  async function execute(task: (ctx: ScanContext) => Promise<ScanResult>, firstStep: ScanStep) {
     const controller = new AbortController()
     abortRef.current = controller
-    setStatus({ phase: 'running', step: 'ocr', progress: null })
+    setStatus({ phase: 'running', step: firstStep, progress: null })
     try {
-      const result = await runScan(
-        file,
+      const result = await task({
         settings,
-        { onProgress: (step, progress) => setStatus({ phase: 'running', step, progress }) },
-        controller.signal,
-      )
+        keys: keyStore.keys,
+        signal: controller.signal,
+        onProgress: (step, progress) => setStatus({ phase: 'running', step, progress }),
+      })
       setStatus({ phase: 'done', result })
     } catch (err) {
       if (isAbortError(err)) setStatus({ phase: 'idle' })
@@ -46,12 +47,18 @@ export default function App() {
     }
   }
 
+  const scan = () => file && execute((ctx) => runScan(file, ctx), 'ocr')
+  const restructure = (pages: OcrPage[]) => execute((ctx) => structurePages(pages, ctx), 'llm')
+
   return (
     <main className="min-h-screen bg-slate-50 text-slate-900">
       <div className="mx-auto max-w-5xl space-y-6 px-4 py-10">
         <header>
           <h1 className="text-3xl font-bold">file-scan</h1>
-          <p className="mt-2 text-slate-600">Déposez un document, obtenez un JSON structuré.</p>
+          <p className="mt-2 text-slate-600">
+            Déposez un document (facture, CV, formulaire, ticket, courrier…), obtenez un JSON structuré. Tout se passe dans
+            votre navigateur.
+          </p>
         </header>
 
         <Dropzone
@@ -62,7 +69,7 @@ export default function App() {
           }}
           disabled={running}
         />
-        <Settings settings={settings} onChange={setSettings} disabled={running} />
+        <Settings settings={settings} onChange={setSettings} keyStore={keyStore} disabled={running} />
 
         <div className="flex items-center gap-3">
           <button
@@ -82,6 +89,7 @@ export default function App() {
               Annuler
             </button>
           )}
+          {!file && <span className="text-sm text-slate-500">Déposez d’abord un fichier.</span>}
         </div>
 
         {status.phase === 'running' && (
@@ -96,7 +104,15 @@ export default function App() {
           </p>
         )}
         {status.phase === 'done' && file && (
-          <Results pages={status.result.pages} json={status.result.json} fileName={file.name} notice={status.result.notice} />
+          <Results
+            pages={status.result.pages}
+            json={status.result.json}
+            fileName={file.name}
+            notice={status.result.notice}
+            onRetry={
+              status.result.notice?.tone === 'error' ? () => restructure((status as { result: ScanResult }).result.pages) : undefined
+            }
+          />
         )}
       </div>
     </main>
