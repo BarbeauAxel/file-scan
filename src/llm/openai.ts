@@ -1,9 +1,21 @@
-import OpenAI from 'openai'
+import type OpenAI from 'openai'
+import type { ClientOptions } from 'openai'
 import type { ChatCompletionCreateParamsNonStreaming } from 'openai/resources/chat/completions'
 import { LLM_MAX_OUTPUT_TOKENS } from '../config'
 import { AppError } from '../lib/errors'
 import { networkError, toLlmError } from './errors'
 import type { CompletionRequest, LlmProvider } from './types'
+
+/** SDK OpenAI chargé à la demande (aussi utilisé pour OpenRouter). */
+export async function createOpenAiClient(options: ClientOptions): Promise<OpenAI> {
+  const { default: OpenAISdk } = await import('openai')
+  return new OpenAISdk({ dangerouslyAllowBrowser: true, maxRetries: 1, ...options })
+}
+
+async function isConnectionError(err: unknown): Promise<boolean> {
+  const { APIConnectionError } = await import('openai')
+  return err instanceof APIConnectionError
+}
 
 /**
  * Appel Chat Completions commun à OpenAI et OpenRouter (API compatible).
@@ -31,7 +43,7 @@ export async function chatCompletion(
   try {
     completion = await sdk.chat.completions.create(body, { signal })
   } catch (err) {
-    if (err instanceof OpenAI.APIConnectionError) throw networkError(providerLabel, err, connectionHint)
+    if (await isConnectionError(err)) throw networkError(providerLabel, err, connectionHint)
     throw toLlmError(err, providerLabel, model)
   }
 
@@ -62,8 +74,8 @@ export const openaiProvider: LlmProvider = {
   label: 'OpenAI',
   keyUrl: 'https://platform.openai.com/api-keys',
 
-  complete(request) {
-    const sdk = new OpenAI({ apiKey: request.apiKey, dangerouslyAllowBrowser: true, maxRetries: 1 })
+  async complete(request) {
+    const sdk = await createOpenAiClient({ apiKey: request.apiKey })
     return chatCompletion(
       sdk,
       'OpenAI',
@@ -76,7 +88,7 @@ export const openaiProvider: LlmProvider = {
 
   async listModels(apiKey, signal) {
     if (!apiKey) return []
-    const sdk = new OpenAI({ apiKey, dangerouslyAllowBrowser: true, maxRetries: 1 })
+    const sdk = await createOpenAiClient({ apiKey })
     try {
       const models = []
       for await (const m of sdk.models.list({ signal })) {
@@ -87,7 +99,7 @@ export const openaiProvider: LlmProvider = {
       }
       return models.sort((a, b) => a.id.localeCompare(b.id))
     } catch (err) {
-      if (err instanceof OpenAI.APIConnectionError) throw networkError('OpenAI', err, OPENAI_CONNECTION_HINT)
+      if (await isConnectionError(err)) throw networkError('OpenAI', err, OPENAI_CONNECTION_HINT)
       throw toLlmError(err, 'OpenAI', '—')
     }
   },

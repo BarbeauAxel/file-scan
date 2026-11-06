@@ -35,11 +35,11 @@ export default function Settings({ settings, onChange, keyStore, onOpenRouterLog
   }
 
   return (
-    <fieldset disabled={disabled} className="grid gap-6 rounded-xl border border-slate-200 bg-white p-4 shadow-sm md:grid-cols-2">
+    <fieldset disabled={disabled} className="grid min-w-0 gap-6 rounded-xl border border-slate-200 bg-white p-4 shadow-sm md:grid-cols-2">
       <legend className="px-1 text-sm font-semibold text-slate-700">Réglages</legend>
 
       {/* --- OCR --- */}
-      <div className="space-y-4">
+      <div className="min-w-0 space-y-4">
         <h2 className="text-base font-semibold">1. OCR</h2>
         <div className="space-y-1">
           <label htmlFor="ocr-engine" className="block text-sm font-medium text-slate-700">
@@ -97,7 +97,7 @@ export default function Settings({ settings, onChange, keyStore, onOpenRouterLog
       </div>
 
       {/* --- LLM --- */}
-      <div className="space-y-4">
+      <div className="min-w-0 space-y-4">
         <h2 className="text-base font-semibold">2. Structuration par LLM</h2>
         <div className="space-y-1">
           <label htmlFor="llm-provider" className="block text-sm font-medium text-slate-700">

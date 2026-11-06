@@ -1,8 +1,13 @@
-import { getDocument, GlobalWorkerOptions, type PDFDocumentProxy } from 'pdfjs-dist'
+import type { PDFDocumentProxy } from 'pdfjs-dist'
 import workerUrl from 'pdfjs-dist/build/pdf.worker.min.mjs?url'
 import { AppError } from '../lib/errors'
 
-GlobalWorkerOptions.workerSrc = workerUrl
+/** pdf.js est chargé à la demande, au premier PDF. */
+async function loadPdfJs() {
+  const pdfjs = await import('pdfjs-dist')
+  pdfjs.GlobalWorkerOptions.workerSrc = workerUrl
+  return pdfjs
+}
 
 /** Résolution de rendu : ~200 dpi (72 dpi × 2,8), un bon compromis pour l'OCR. */
 const DEFAULT_SCALE = 2.8
@@ -11,6 +16,7 @@ const MAX_CANVAS_SIDE = 5000
 
 /** Ouvre un PDF ; appeler `close()` une fois terminé pour libérer le worker. */
 export async function openPdf(file: File): Promise<{ pdf: PDFDocumentProxy; close: () => Promise<void> }> {
+  const { getDocument } = await loadPdfJs()
   const data = new Uint8Array(await file.arrayBuffer())
   const task = getDocument({ data })
   try {

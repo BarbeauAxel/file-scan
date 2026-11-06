@@ -153,12 +153,18 @@ export default function App() {
             pages={status.result.pages}
             json={status.result.json}
             fileName={file.name}
+            structured={status.result.structured}
             notice={status.result.notice}
             onRetry={
               status.result.notice?.tone === 'error' ? () => restructure((status as { result: ScanResult }).result.pages) : undefined
             }
           />
         )}
+
+        <footer className="border-t border-slate-200 pt-6 text-xs leading-relaxed text-slate-500">
+          Aucun serveur file-scan : vos fichiers et vos clés restent dans ce navigateur. Avec Tesseract, l’OCR est local ; avec
+          OCR.space, le fichier est envoyé à OCR.space. Le texte extrait n’est envoyé qu’au fournisseur LLM que vous choisissez.
+        </footer>
       </div>
     </main>
   )

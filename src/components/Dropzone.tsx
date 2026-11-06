@@ -18,6 +18,20 @@ export default function Dropzone({ file, onFileChange, disabled }: DropzoneProps
     return () => URL.revokeObjectURL(previewUrl)
   }, [previewUrl])
 
+  // Coller une capture d'écran ou un fichier (Ctrl+V) n'importe où sur la page.
+  useEffect(() => {
+    function onPaste(event: ClipboardEvent) {
+      if (disabled || (event.target as HTMLElement)?.closest?.('input, textarea')) return
+      const pasted = Array.from(event.clipboardData?.files ?? [])[0]
+      if (!pasted) return
+      event.preventDefault()
+      const named = pasted.name && pasted.name !== 'image.png' ? pasted : new File([pasted], `capture-${Date.now()}.png`, { type: pasted.type })
+      accept(named)
+    }
+    window.addEventListener('paste', onPaste)
+    return () => window.removeEventListener('paste', onPaste)
+  })
+
   function accept(candidate: File | undefined) {
     if (!candidate) return
     const problem = validateFile(candidate)
@@ -63,7 +77,7 @@ export default function Dropzone({ file, onFileChange, disabled }: DropzoneProps
         <p className="font-medium text-slate-700">
           Glissez-déposez un document ici, ou <span className="text-indigo-600 underline">parcourez</span>
         </p>
-        <p className="mt-1 text-sm text-slate-500">PNG, JPG, WEBP ou PDF (multi-pages)</p>
+        <p className="mt-1 text-sm text-slate-500">PNG, JPG, WEBP ou PDF (multi-pages) · ou collez une image avec Ctrl+V</p>
         <input
           ref={inputRef}
           type="file"

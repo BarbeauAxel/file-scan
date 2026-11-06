@@ -1,12 +1,14 @@
-import Anthropic from '@anthropic-ai/sdk'
+import type Anthropic from '@anthropic-ai/sdk'
 import { ANTHROPIC_FALLBACK_MODELS, LLM_MAX_OUTPUT_TOKENS } from '../config'
 import { AppError } from '../lib/errors'
 import { networkError, toLlmError } from './errors'
 import type { CompletionRequest, LlmProvider } from './types'
 
-function client(apiKey: string) {
+/** SDK chargé à la demande. */
+async function sdk(apiKey: string) {
+  const { default: AnthropicSdk } = await import('@anthropic-ai/sdk')
   // dangerouslyAllowBrowser ajoute l'en-tête `anthropic-dangerous-direct-browser-access: true`.
-  return new Anthropic({ apiKey, dangerouslyAllowBrowser: true, maxRetries: 1 })
+  return { client: new AnthropicSdk({ apiKey, dangerouslyAllowBrowser: true, maxRetries: 1 }), AnthropicSdk }
 }
 
 export const anthropicProvider: LlmProvider = {
@@ -22,17 +24,18 @@ export const anthropicProvider: LlmProvider = {
       messages: [{ role: 'user' as const, content: user }],
       output_config: { format: { type: 'json_schema' as const, schema } },
     }
+    const { client, AnthropicSdk } = await sdk(apiKey)
     let message: Anthropic.Message | Anthropic.Beta.BetaMessage
     try {
       message = ANTHROPIC_FALLBACK_MODELS.has(model)
         ? // Repli automatique côté serveur si le modèle refuse la requête (faux positif de sécurité).
-          await client(apiKey).beta.messages.create(
+          await client.beta.messages.create(
             { ...params, betas: ['server-side-fallback-2026-07-01'], fallbacks: 'default' },
             { signal },
           )
-        : await client(apiKey).messages.create(params, { signal })
+        : await client.messages.create(params, { signal })
     } catch (err) {
-      if (err instanceof Anthropic.APIConnectionError) throw networkError('Anthropic', err)
+      if (err instanceof AnthropicSdk.APIConnectionError) throw networkError('Anthropic', err)
       throw toLlmError(err, 'Anthropic', model)
     }
 
@@ -47,14 +50,15 @@ export const anthropicProvider: LlmProvider = {
 
   async listModels(apiKey, signal) {
     if (!apiKey) return []
+    const { client, AnthropicSdk } = await sdk(apiKey)
     try {
       const models = []
-      for await (const m of client(apiKey).models.list({ limit: 100 }, { signal })) {
+      for await (const m of client.models.list({ limit: 100 }, { signal })) {
         models.push({ id: m.id, label: m.display_name })
       }
       return models
     } catch (err) {
-      if (err instanceof Anthropic.APIConnectionError) throw networkError('Anthropic', err)
+      if (err instanceof AnthropicSdk.APIConnectionError) throw networkError('Anthropic', err)
       throw toLlmError(err, 'Anthropic', '—')
     }
   },

@@ -1,4 +1,4 @@
-import { createWorker, type LoggerMessage, type Worker } from 'tesseract.js'
+import type { LoggerMessage, Worker } from 'tesseract.js'
 import { AppError } from '../lib/errors'
 import { isPdf } from '../lib/files'
 import { renderPdfPages } from './pdf'
@@ -48,6 +48,7 @@ export const tesseractEngine: OcrEngine = {
     report({ progress: 0, status: 'Chargement du moteur OCR' })
     let worker: Worker
     try {
+      const { createWorker } = await import('tesseract.js') // chargé à la demande
       worker = await createWorker(languages, 1, { logger })
     } catch (err) {
       throw new AppError(
