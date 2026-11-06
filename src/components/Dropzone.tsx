@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { ACCEPT_ATTRIBUTE, formatBytes, isPdf, validateFile } from '../lib/files'
 
 interface DropzoneProps {
@@ -11,17 +11,12 @@ export default function Dropzone({ file, onFileChange, disabled }: DropzoneProps
   const inputRef = useRef<HTMLInputElement>(null)
   const [dragOver, setDragOver] = useState(false)
   const [error, setError] = useState<string | null>(null)
-  const [previewUrl, setPreviewUrl] = useState<string | null>(null)
+  const previewUrl = useMemo(() => (file ? URL.createObjectURL(file) : null), [file])
 
   useEffect(() => {
-    if (!file) {
-      setPreviewUrl(null)
-      return
-    }
-    const url = URL.createObjectURL(file)
-    setPreviewUrl(url)
-    return () => URL.revokeObjectURL(url)
-  }, [file])
+    if (!previewUrl) return
+    return () => URL.revokeObjectURL(previewUrl)
+  }, [previewUrl])
 
   function accept(candidate: File | undefined) {
     if (!candidate) return
