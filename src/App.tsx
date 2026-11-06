@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
+import { completeOpenRouterLogin, startOpenRouterLogin } from './auth/openrouterOAuth'
 import Dropzone from './components/Dropzone'
 import ProgressBar from './components/ProgressBar'
 import Results from './components/Results'
@@ -21,9 +22,31 @@ export default function App() {
   const keyStore = useKeys()
   const [status, setStatus] = useState<Status>({ phase: 'idle' })
   const abortRef = useRef<AbortController | null>(null)
+  const [banner, setBanner] = useState<{ tone: 'success' | 'error'; message: string } | null>(null)
+  const { setKey } = keyStore
 
   useEffect(() => saveSettings(settings), [settings])
   useEffect(() => () => abortRef.current?.abort(), [])
+
+  // Retour de la connexion OAuth OpenRouter (?code=…).
+  useEffect(() => {
+    completeOpenRouterLogin()
+      .then((key) => {
+        if (!key) return
+        setKey('openrouter', key)
+        setSettings((s) => ({ ...s, llmProvider: 'openrouter' }))
+        setBanner({ tone: 'success', message: 'Connecté à OpenRouter : la clé de votre compte est enregistrée dans ce navigateur.' })
+      })
+      .catch((err) => setBanner({ tone: 'error', message: toUserMessage(err) }))
+  }, [setKey])
+
+  async function openRouterLogin() {
+    try {
+      await startOpenRouterLogin()
+    } catch (err) {
+      setBanner({ tone: 'error', message: toUserMessage(err) })
+    }
+  }
 
   const running = status.phase === 'running'
 
@@ -61,6 +84,22 @@ export default function App() {
           </p>
         </header>
 
+        {banner && (
+          <div
+            role={banner.tone === 'error' ? 'alert' : 'status'}
+            data-testid="banner"
+            className={[
+              'flex items-start justify-between gap-3 rounded-lg px-4 py-3 text-sm',
+              banner.tone === 'error' ? 'bg-red-50 text-red-700' : 'bg-emerald-50 text-emerald-800',
+            ].join(' ')}
+          >
+            <span>{banner.message}</span>
+            <button type="button" onClick={() => setBanner(null)} aria-label="Fermer" className="opacity-60 hover:opacity-100">
+              ✕
+            </button>
+          </div>
+        )}
+
         <Dropzone
           file={file}
           onFileChange={(f) => {
@@ -69,7 +108,13 @@ export default function App() {
           }}
           disabled={running}
         />
-        <Settings settings={settings} onChange={setSettings} keyStore={keyStore} disabled={running} />
+        <Settings
+          settings={settings}
+          onChange={setSettings}
+          keyStore={keyStore}
+          onOpenRouterLogin={openRouterLogin}
+          disabled={running}
+        />
 
         <div className="flex items-center gap-3">
           <button

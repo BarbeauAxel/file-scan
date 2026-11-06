@@ -9,6 +9,7 @@ interface SettingsProps {
   settings: SettingsValue
   onChange: (settings: SettingsValue) => void
   keyStore: ReturnType<typeof useKeys>
+  onOpenRouterLogin: () => void
   disabled?: boolean
 }
 
@@ -20,7 +21,7 @@ const KEY_PLACEHOLDERS: Record<LlmProviderId, string> = {
   anthropic: 'sk-ant-…',
 }
 
-export default function Settings({ settings, onChange, keyStore, disabled }: SettingsProps) {
+export default function Settings({ settings, onChange, keyStore, onOpenRouterLogin, disabled }: SettingsProps) {
   const { keys, remember, setKey, setRemember, clearKeys } = keyStore
   const provider = settings.llmProvider
   const hasAnyKey = Object.values(keys).some(Boolean)
@@ -97,6 +98,21 @@ export default function Settings({ settings, onChange, keyStore, disabled }: Set
               value={settings.models[provider]}
               onChange={(model) => onChange({ ...settings, models: { ...settings.models, [provider]: model } })}
             />
+            {provider === 'openrouter' && !keys.openrouter && (
+              <div className="space-y-2">
+                <button
+                  type="button"
+                  onClick={onOpenRouterLogin}
+                  className="flex w-full items-center justify-center gap-2 rounded-lg bg-slate-900 px-4 py-2.5 text-sm font-semibold text-white hover:bg-slate-700"
+                >
+                  Se connecter avec OpenRouter
+                </button>
+                <p className="text-center text-xs text-slate-500">
+                  Vous autorisez file-scan sur openrouter.ai ; une clé liée à votre compte est créée. Ou saisissez une clé
+                  existante :
+                </p>
+              </div>
+            )}
             <KeyField
               label={`Clé ${LLM_PROVIDERS[provider].label}`}
               value={keys[provider]}
