@@ -1,5 +1,6 @@
 import { OCR_LANGUAGES } from '../config'
 import { LLM_PROVIDERS, type LlmProviderId } from '../llm'
+import { OCR_ENGINES, type OcrEngineId } from '../ocr'
 import type { useKeys } from '../storage/keys'
 import type { Settings as SettingsValue } from '../storage/settings'
 import KeyField from './KeyField'
@@ -40,6 +41,37 @@ export default function Settings({ settings, onChange, keyStore, onOpenRouterLog
       {/* --- OCR --- */}
       <div className="space-y-4">
         <h2 className="text-base font-semibold">1. OCR</h2>
+        <div className="space-y-1">
+          <label htmlFor="ocr-engine" className="block text-sm font-medium text-slate-700">
+            Moteur
+          </label>
+          <select
+            id="ocr-engine"
+            value={settings.ocrEngine}
+            onChange={(e) => onChange({ ...settings, ocrEngine: e.target.value as OcrEngineId })}
+            className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm"
+          >
+            {Object.values(OCR_ENGINES).map((engine) => (
+              <option key={engine.id} value={engine.id}>
+                {engine.label}
+              </option>
+            ))}
+          </select>
+          <p className="text-xs text-slate-500">
+            {settings.ocrEngine === 'tesseract'
+              ? 'Gratuit et sans quota : le fichier ne quitte pas votre navigateur.'
+              : 'Le fichier est envoyé à OCR.space. Plan gratuit : 25 000 requêtes/mois, 1 Mo par fichier (images compressées automatiquement), 3 pages max par PDF.'}
+          </p>
+        </div>
+        {settings.ocrEngine === 'ocrspace' && (
+          <KeyField
+            label="Clé OCR.space"
+            value={keys.ocrspace}
+            onSave={(v) => setKey('ocrspace', v)}
+            keyUrl="https://ocr.space/ocrapi/freekey"
+            placeholder="K8…"
+          />
+        )}
         <div>
           <h3 className="mb-2 text-sm font-medium text-slate-700">Langues du document</h3>
           <div className="flex flex-wrap gap-2">
