@@ -49,7 +49,7 @@ export default function Results({ pages, json, fileName, structured, notice, onR
   }
 
   return (
-    <section className="glass-lite card appear flex flex-col gap-4" aria-label="Résultats">
+    <section className="appear flex h-full min-h-0 flex-col gap-4" aria-label="Résultats">
       {notice && (
         <div
           role={notice.tone === 'error' ? 'alert' : 'status'}
@@ -107,11 +107,11 @@ export default function Results({ pages, json, fileName, structured, notice, onR
         </div>
       </div>
 
-      <div role="tabpanel">
+      <div role="tabpanel" className="flex min-h-0 flex-1 flex-col">
         {tab === 'json' ? (
           <JsonViewer json={json} />
         ) : (
-          <div className="flex flex-col gap-4" data-testid="ocr-text">
+          <div className="flex min-h-0 flex-col gap-4 overflow-auto" data-testid="ocr-text">
             {pages.map((p) => (
               <div key={p.page} className="flex flex-col gap-1.5">
                 <div className="flex justify-between gap-3 px-1 text-xs text-faint">

@@ -47,7 +47,7 @@ export default function Dropzone({ file, onFileChange, disabled }: DropzoneProps
   }
 
   return (
-    <section className="flex flex-col gap-3">
+    <section className={['dropzone-wrap', file ? 'has-file' : ''].join(' ')}>
       <div
         role="button"
         tabIndex={0}
@@ -65,7 +65,7 @@ export default function Dropzone({ file, onFileChange, disabled }: DropzoneProps
         }}
         onDragLeave={() => setDragOver(false)}
         onDrop={onDrop}
-        className={['dropzone glass-lite', dragOver ? 'is-dragover' : ''].join(' ')}
+        className={['dropzone', file ? 'dropzone--compact' : 'dropzone--fill', dragOver ? 'is-dragover' : ''].join(' ')}
       >
         <span className="dropzone__icon" aria-hidden="true">
           <svg width="22" height="22" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
@@ -99,8 +99,8 @@ export default function Dropzone({ file, onFileChange, disabled }: DropzoneProps
       )}
 
       {file && previewUrl && (
-        <div className="glass-lite appear flex flex-col gap-3 p-3 sm:p-4">
-          <div className="flex items-center justify-between gap-3 pl-1 text-sm">
+        <div className="preview-card appear flex min-h-0 flex-1 flex-col gap-2">
+          <div className="flex items-center justify-between gap-3 text-sm">
             <span className="truncate font-medium text-text" title={file.name}>
               {file.name} <span className="font-normal text-faint">· {formatBytes(file.size)}</span>
             </span>
@@ -117,11 +117,11 @@ export default function Dropzone({ file, onFileChange, disabled }: DropzoneProps
             </button>
           </div>
           {isPdf(file) ? (
-            <object data={previewUrl} type="application/pdf" className="preview h-96">
+            <object data={previewUrl} type="application/pdf" className="preview preview--pdf">
               <p className="hint p-4">Aperçu PDF indisponible dans ce navigateur.</p>
             </object>
           ) : (
-            <img src={previewUrl} alt={`Aperçu de ${file.name}`} className="preview mx-auto max-h-96 w-auto object-contain" />
+            <img src={previewUrl} alt={`Aperçu de ${file.name}`} className="preview preview--img" />
           )}
         </div>
       )}

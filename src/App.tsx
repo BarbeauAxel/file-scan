@@ -79,62 +79,51 @@ export default function App() {
     <>
       <AsciiDocToJson busy={running} />
 
-      <div className="app">
-        <header className="hero shell">
-          <p className="hero__badge glass">
-            <span className="pulse" aria-hidden="true" />
-            100 % dans votre navigateur
-          </p>
-          <h1 className="hero__name">file-scan</h1>
-          <p className="hero__title">Document → OCR → JSON structuré</p>
-          <p className="hero__tagline">
+      {banner && (
+        <div
+          role={banner.tone === 'error' ? 'alert' : 'status'}
+          data-testid="banner"
+          className={`toast alert appear ${banner.tone === 'error' ? 'alert--error' : 'alert--success'}`}
+        >
+          <span>{banner.message}</span>
+          <button type="button" onClick={() => setBanner(null)} aria-label="Fermer" className="alert__close">
+            <svg width="12" height="12" viewBox="0 0 12 12" fill="none" aria-hidden="true">
+              <path d="M2.5 2.5l7 7m0-7l-7 7" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+            </svg>
+          </button>
+        </div>
+      )}
+
+      <div className="app page">
+        <header className="topbar">
+          <div className="topbar__brand">
+            <h1 className="topbar__name">file-scan</h1>
+            <p className="topbar__title">Document → OCR → JSON structuré</p>
+          </div>
+          <p className="topbar__tagline">
             Déposez un document (facture, CV, formulaire, ticket, courrier…), obtenez un JSON structuré. Tout se passe dans
             votre navigateur.
           </p>
+          <p className="topbar__badge glass">
+            <span className="pulse" aria-hidden="true" />
+            100 % local
+          </p>
         </header>
 
-        <main className="shell flex flex-col gap-[clamp(40px,7vw,64px)] pb-16">
-          {banner && (
-            <div
-              role={banner.tone === 'error' ? 'alert' : 'status'}
-              data-testid="banner"
-              className={`alert appear ${banner.tone === 'error' ? 'alert--error' : 'alert--success'}`}
-            >
-              <span>{banner.message}</span>
-              <button type="button" onClick={() => setBanner(null)} aria-label="Fermer" className="alert__close">
-                <svg width="12" height="12" viewBox="0 0 12 12" fill="none" aria-hidden="true">
-                  <path d="M2.5 2.5l7 7m0-7l-7 7" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
-                </svg>
-              </button>
-            </div>
-          )}
-
-          <section aria-labelledby="section-document">
+        <main className="bento">
+          {/* 01 · Document + lancement */}
+          <section className="tile tile--drop glass-lite" aria-labelledby="section-document">
             <SectionHeader index="01" title="Document" id="section-document" />
-            <Dropzone
-              file={file}
-              onFileChange={(f) => {
-                setFile(f)
-                setStatus({ phase: 'idle' })
-              }}
-              disabled={running}
-            />
-          </section>
-
-          <section aria-labelledby="section-settings">
-            <SectionHeader index="02" title="Réglages" id="section-settings" />
-            <Settings
-              settings={settings}
-              onChange={setSettings}
-              keyStore={keyStore}
-              onOpenRouterLogin={openRouterLogin}
-              disabled={running}
-            />
-          </section>
-
-          <section aria-labelledby="section-result" className="flex flex-col gap-4">
-            <SectionHeader index="03" title="Résultat" id="section-result" />
-
+            <div className="tile__body">
+              <Dropzone
+                file={file}
+                onFileChange={(f) => {
+                  setFile(f)
+                  setStatus({ phase: 'idle' })
+                }}
+                disabled={running}
+              />
+            </div>
             <div className="flex flex-wrap items-center gap-3">
               <button type="button" onClick={scan} disabled={!file || running} className="btn btn--primary btn--lg">
                 {running ? (
@@ -158,7 +147,6 @@ export default function App() {
               )}
               {!file && <span className="hint">Déposez d’abord un fichier.</span>}
             </div>
-
             {status.phase === 'running' && (
               <ProgressBar
                 value={status.step === 'ocr' ? (status.progress?.progress ?? null) : null}
@@ -170,30 +158,52 @@ export default function App() {
                 {status.message}
               </p>
             )}
-            {status.phase === 'idle' && (
-              <div className="glass-lite empty-state">
-                <span className="empty-state__glyph" aria-hidden="true">
-                  {'{ }'}
-                </span>
-                <p className="m-0">Le JSON structuré apparaîtra ici après le scan.</p>
-              </div>
-            )}
-            {status.phase === 'done' && file && (
-              <Results
-                pages={status.result.pages}
-                json={status.result.json}
-                fileName={file.name}
-                structured={status.result.structured}
-                notice={status.result.notice}
-                onRetry={
-                  status.result.notice?.tone === 'error' ? () => restructure((status as { result: ScanResult }).result.pages) : undefined
-                }
+          </section>
+
+          {/* 02 · Réglages */}
+          <section className="tile tile--settings glass-lite @container" aria-labelledby="section-settings">
+            <SectionHeader index="02" title="Réglages" id="section-settings" />
+            <div className="tile__body tile__body--scroll">
+              <Settings
+                settings={settings}
+                onChange={setSettings}
+                keyStore={keyStore}
+                onOpenRouterLogin={openRouterLogin}
+                disabled={running}
               />
-            )}
+            </div>
+          </section>
+
+          {/* 03 · Résultat */}
+          <section className="tile tile--result glass-lite" aria-labelledby="section-result">
+            <SectionHeader index="03" title="Résultat" id="section-result" />
+            <div className="tile__body">
+              {status.phase === 'done' && file ? (
+                <Results
+                  pages={status.result.pages}
+                  json={status.result.json}
+                  fileName={file.name}
+                  structured={status.result.structured}
+                  notice={status.result.notice}
+                  onRetry={
+                    status.result.notice?.tone === 'error' ? () => restructure((status as { result: ScanResult }).result.pages) : undefined
+                  }
+                />
+              ) : (
+                <div className="empty-state">
+                  <span className="empty-state__glyph" aria-hidden="true">
+                    {'{ }'}
+                  </span>
+                  <p className="m-0">
+                    {status.phase === 'running' ? 'Analyse en cours…' : 'Le JSON structuré apparaîtra ici après le scan.'}
+                  </p>
+                </div>
+              )}
+            </div>
           </section>
         </main>
 
-        <footer className="shell footer">
+        <footer className="page__footer">
           Aucun serveur file-scan : vos fichiers et vos clés restent dans ce navigateur. Avec Tesseract, l’OCR est local ; avec
           OCR.space, le fichier est envoyé à OCR.space. Le texte extrait n’est envoyé qu’au fournisseur LLM que vous choisissez.
         </footer>

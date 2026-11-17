@@ -35,7 +35,7 @@ export default function Settings({ settings, onChange, keyStore, onOpenRouterLog
   }
 
   return (
-    <fieldset disabled={disabled} className="glass-lite card m-0 grid min-w-0 gap-x-8 gap-y-7 md:grid-cols-2">
+    <fieldset disabled={disabled} className="m-0 grid min-w-0 border-0 p-0 gap-x-8 gap-y-6 @2xl:grid-cols-2">
       <legend className="sr-only">Réglages</legend>
 
       {/* --- OCR --- */}
@@ -157,7 +157,7 @@ export default function Settings({ settings, onChange, keyStore, onOpenRouterLog
       </div>
 
       {/* --- Clés --- */}
-      <div className="flex flex-wrap items-center justify-between gap-3 border-t border-glass pt-5 md:col-span-2">
+      <div className="flex flex-wrap items-center justify-between gap-3 border-t border-glass pt-5 @2xl:col-span-2">
         <label className="flex cursor-pointer items-center gap-2.5 text-[13.5px] text-muted">
           <input type="checkbox" checked={!remember} onChange={(e) => setRemember(!e.target.checked)} className="checkbox" />
           Ne pas mémoriser mes clés (effacées à la fermeture de l’onglet)

@@ -37,7 +37,7 @@ function tokenize(json: string): { text: string; kind?: TokenKind }[] {
 export default function JsonViewer({ json }: { json: string }) {
   const tokens = useMemo(() => tokenize(json), [json])
   return (
-    <pre className="code-block max-h-[32rem]">
+    <pre className="code-block json-view">
       <code data-testid="json-output">
         {tokens.map((t, i) =>
           t.kind ? (
