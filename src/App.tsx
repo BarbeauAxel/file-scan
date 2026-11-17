@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
-import AsciiBackground from './components/AsciiBackground'
+import AsciiDocToJson from './components/AsciiDocToJson'
 import { completeOpenRouterLogin, startOpenRouterLogin } from './auth/openrouterOAuth'
 import Dropzone from './components/Dropzone'
 import ProgressBar from './components/ProgressBar'
@@ -77,7 +77,7 @@ export default function App() {
 
   return (
     <>
-      <AsciiBackground />
+      <AsciiDocToJson busy={running} />
 
       <div className="app">
         <header className="hero shell">
