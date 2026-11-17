@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import AsciiDocToJson from './components/AsciiDocToJson'
+import AsciiTitle from './components/AsciiTitle'
 import { completeOpenRouterLogin, startOpenRouterLogin } from './auth/openrouterOAuth'
 import Dropzone from './components/Dropzone'
 import ProgressBar from './components/ProgressBar'
@@ -97,7 +98,7 @@ export default function App() {
       <div className="app page">
         <header className="topbar">
           <div className="topbar__brand">
-            <h1 className="topbar__name">file-scan</h1>
+            <AsciiTitle />
             <p className="topbar__title">Document → OCR → JSON structuré</p>
           </div>
           <p className="topbar__tagline">
