@@ -47,7 +47,7 @@ export default function Dropzone({ file, onFileChange, disabled }: DropzoneProps
   }
 
   return (
-    <section className="space-y-3">
+    <section className="flex flex-col gap-3">
       <div
         role="button"
         tabIndex={0}
@@ -65,19 +65,20 @@ export default function Dropzone({ file, onFileChange, disabled }: DropzoneProps
         }}
         onDragLeave={() => setDragOver(false)}
         onDrop={onDrop}
-        className={[
-          'flex cursor-pointer flex-col items-center justify-center rounded-xl border-2 border-dashed px-6 py-10 text-center transition',
-          dragOver ? 'border-indigo-500 bg-indigo-50' : 'border-slate-300 bg-white hover:border-indigo-400',
-          disabled ? 'cursor-not-allowed opacity-60' : '',
-        ].join(' ')}
+        className={['dropzone glass-lite', dragOver ? 'is-dragover' : ''].join(' ')}
       >
-        <svg aria-hidden className="mb-3 h-10 w-10 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
-          <path strokeLinecap="round" strokeLinejoin="round" d="M12 16.5V3m0 0L7.5 7.5M12 3l4.5 4.5M3 15.75V18a2.25 2.25 0 002.25 2.25h13.5A2.25 2.25 0 0021 18v-2.25" />
-        </svg>
-        <p className="font-medium text-slate-700">
-          Glissez-déposez un document ici, ou <span className="text-indigo-600 underline">parcourez</span>
+        <span className="dropzone__icon" aria-hidden="true">
+          <svg width="22" height="22" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+            <path strokeLinecap="round" strokeLinejoin="round" d="M12 16.5V3m0 0L7.5 7.5M12 3l4.5 4.5M3 15.75V18a2.25 2.25 0 002.25 2.25h13.5A2.25 2.25 0 0021 18v-2.25" />
+          </svg>
+        </span>
+        <p className="m-0 font-medium text-text">
+          Glissez-déposez un document ici, ou{' '}
+          <span className="text-accent underline decoration-[var(--accent-soft)] underline-offset-[3px]">parcourez</span>
         </p>
-        <p className="mt-1 text-sm text-slate-500">PNG, JPG, WEBP ou PDF (multi-pages) · ou collez une image avec Ctrl+V</p>
+        <p className="hint">
+          PNG, JPG, WEBP ou PDF (multi-pages) · ou collez une image avec <kbd className="kbd">Ctrl</kbd>+<kbd className="kbd">V</kbd>
+        </p>
         <input
           ref={inputRef}
           type="file"
@@ -92,16 +93,16 @@ export default function Dropzone({ file, onFileChange, disabled }: DropzoneProps
       </div>
 
       {error && (
-        <p role="alert" className="rounded-lg bg-red-50 px-3 py-2 text-sm text-red-700">
+        <p role="alert" className="alert alert--error appear">
           {error}
         </p>
       )}
 
       {file && previewUrl && (
-        <div className="rounded-xl border border-slate-200 bg-white p-3">
-          <div className="mb-2 flex items-center justify-between gap-3 text-sm">
-            <span className="truncate font-medium text-slate-700" title={file.name}>
-              {file.name} <span className="font-normal text-slate-500">· {formatBytes(file.size)}</span>
+        <div className="glass-lite appear flex flex-col gap-3 p-3 sm:p-4">
+          <div className="flex items-center justify-between gap-3 pl-1 text-sm">
+            <span className="truncate font-medium text-text" title={file.name}>
+              {file.name} <span className="font-normal text-faint">· {formatBytes(file.size)}</span>
             </span>
             <button
               type="button"
@@ -110,17 +111,17 @@ export default function Dropzone({ file, onFileChange, disabled }: DropzoneProps
                 setError(null)
                 onFileChange(null)
               }}
-              className="shrink-0 rounded-md px-2 py-1 text-slate-500 hover:bg-slate-100 hover:text-slate-800 disabled:opacity-50"
+              className="btn btn--ghost btn--sm shrink-0"
             >
               Retirer
             </button>
           </div>
           {isPdf(file) ? (
-            <object data={previewUrl} type="application/pdf" className="h-96 w-full rounded-md bg-slate-100">
-              <p className="p-4 text-sm text-slate-500">Aperçu PDF indisponible dans ce navigateur.</p>
+            <object data={previewUrl} type="application/pdf" className="preview h-96">
+              <p className="hint p-4">Aperçu PDF indisponible dans ce navigateur.</p>
             </object>
           ) : (
-            <img src={previewUrl} alt={`Aperçu de ${file.name}`} className="mx-auto max-h-96 rounded-md object-contain" />
+            <img src={previewUrl} alt={`Aperçu de ${file.name}`} className="preview mx-auto max-h-96 w-auto object-contain" />
           )}
         </div>
       )}

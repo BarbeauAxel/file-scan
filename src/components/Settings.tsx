@@ -35,21 +35,23 @@ export default function Settings({ settings, onChange, keyStore, onOpenRouterLog
   }
 
   return (
-    <fieldset disabled={disabled} className="grid min-w-0 gap-6 rounded-xl border border-slate-200 bg-white p-4 shadow-sm md:grid-cols-2">
-      <legend className="px-1 text-sm font-semibold text-slate-700">Réglages</legend>
+    <fieldset disabled={disabled} className="glass-lite card m-0 grid min-w-0 gap-x-8 gap-y-7 md:grid-cols-2">
+      <legend className="sr-only">Réglages</legend>
 
       {/* --- OCR --- */}
-      <div className="min-w-0 space-y-4">
-        <h2 className="text-base font-semibold">1. OCR</h2>
-        <div className="space-y-1">
-          <label htmlFor="ocr-engine" className="block text-sm font-medium text-slate-700">
+      <div className="flex min-w-0 flex-col gap-4">
+        <h3 className="subhead">
+          <span className="mr-2 font-mono text-[13px] font-normal text-accent">a.</span>OCR
+        </h3>
+        <div className="field">
+          <label htmlFor="ocr-engine" className="label">
             Moteur
           </label>
           <select
             id="ocr-engine"
             value={settings.ocrEngine}
             onChange={(e) => onChange({ ...settings, ocrEngine: e.target.value as OcrEngineId })}
-            className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm"
+            className="input"
           >
             {Object.values(OCR_ENGINES).map((engine) => (
               <option key={engine.id} value={engine.id}>
@@ -57,7 +59,7 @@ export default function Settings({ settings, onChange, keyStore, onOpenRouterLog
               </option>
             ))}
           </select>
-          <p className="text-xs text-slate-500">
+          <p className="hint">
             {settings.ocrEngine === 'tesseract'
               ? 'Gratuit et sans quota : le fichier ne quitte pas votre navigateur.'
               : 'Le fichier est envoyé à OCR.space. Plan gratuit : 25 000 requêtes/mois, 1 Mo par fichier (images compressées automatiquement), 3 pages max par PDF.'}
@@ -72,9 +74,9 @@ export default function Settings({ settings, onChange, keyStore, onOpenRouterLog
             placeholder="K8…"
           />
         )}
-        <div>
-          <h3 className="mb-2 text-sm font-medium text-slate-700">Langues du document</h3>
-          <div className="flex flex-wrap gap-2">
+        <div className="field">
+          <span className="label">Langues du document</span>
+          <div className="flex flex-wrap gap-1.5">
             {OCR_LANGUAGES.map((l) => {
               const active = settings.ocrLanguages.includes(l.code)
               return (
@@ -83,10 +85,7 @@ export default function Settings({ settings, onChange, keyStore, onOpenRouterLog
                   type="button"
                   aria-pressed={active}
                   onClick={() => toggleLanguage(l.code)}
-                  className={[
-                    'rounded-full border px-3 py-1 text-sm transition',
-                    active ? 'border-indigo-600 bg-indigo-50 text-indigo-700' : 'border-slate-300 text-slate-600 hover:border-slate-400',
-                  ].join(' ')}
+                  className="chip chip-toggle"
                 >
                   {l.label}
                 </button>
@@ -97,17 +96,19 @@ export default function Settings({ settings, onChange, keyStore, onOpenRouterLog
       </div>
 
       {/* --- LLM --- */}
-      <div className="min-w-0 space-y-4">
-        <h2 className="text-base font-semibold">2. Structuration par LLM</h2>
-        <div className="space-y-1">
-          <label htmlFor="llm-provider" className="block text-sm font-medium text-slate-700">
+      <div className="flex min-w-0 flex-col gap-4">
+        <h3 className="subhead">
+          <span className="mr-2 font-mono text-[13px] font-normal text-accent">b.</span>Structuration par LLM
+        </h3>
+        <div className="field">
+          <label htmlFor="llm-provider" className="label">
             Fournisseur
           </label>
           <select
             id="llm-provider"
             value={provider}
             onChange={(e) => onChange({ ...settings, llmProvider: e.target.value as SettingsValue['llmProvider'] })}
-            className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm"
+            className="input"
           >
             <option value="none">Aucun — OCR seul</option>
             {PROVIDER_ORDER.map((id) => (
@@ -117,7 +118,7 @@ export default function Settings({ settings, onChange, keyStore, onOpenRouterLog
               </option>
             ))}
           </select>
-          <p className="text-xs text-slate-500">
+          <p className="hint">
             Vous utilisez vos propres crédits. Le texte OCR est envoyé directement depuis votre navigateur au fournisseur choisi.
           </p>
         </div>
@@ -131,15 +132,14 @@ export default function Settings({ settings, onChange, keyStore, onOpenRouterLog
               onChange={(model) => onChange({ ...settings, models: { ...settings.models, [provider]: model } })}
             />
             {provider === 'openrouter' && !keys.openrouter && (
-              <div className="space-y-2">
-                <button
-                  type="button"
-                  onClick={onOpenRouterLogin}
-                  className="flex w-full items-center justify-center gap-2 rounded-lg bg-slate-900 px-4 py-2.5 text-sm font-semibold text-white hover:bg-slate-700"
-                >
+              <div className="flex flex-col gap-2">
+                <button type="button" onClick={onOpenRouterLogin} className="btn btn--primary w-full">
                   Se connecter avec OpenRouter
+                  <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+                    <path d="M3.5 8h9M9 4.5L12.5 8 9 11.5" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
+                  </svg>
                 </button>
-                <p className="text-center text-xs text-slate-500">
+                <p className="hint text-center">
                   Vous autorisez file-scan sur openrouter.ai ; une clé liée à votre compte est créée. Ou saisissez une clé
                   existante :
                 </p>
@@ -157,22 +157,12 @@ export default function Settings({ settings, onChange, keyStore, onOpenRouterLog
       </div>
 
       {/* --- Clés --- */}
-      <div className="flex flex-wrap items-center justify-between gap-3 border-t border-slate-100 pt-4 md:col-span-2">
-        <label className="flex items-center gap-2 text-sm text-slate-700">
-          <input
-            type="checkbox"
-            checked={!remember}
-            onChange={(e) => setRemember(!e.target.checked)}
-            className="h-4 w-4 rounded border-slate-300"
-          />
+      <div className="flex flex-wrap items-center justify-between gap-3 border-t border-glass pt-5 md:col-span-2">
+        <label className="flex cursor-pointer items-center gap-2.5 text-[13.5px] text-muted">
+          <input type="checkbox" checked={!remember} onChange={(e) => setRemember(!e.target.checked)} className="checkbox" />
           Ne pas mémoriser mes clés (effacées à la fermeture de l’onglet)
         </label>
-        <button
-          type="button"
-          onClick={clearKeys}
-          disabled={!hasAnyKey}
-          className="rounded-lg border border-red-200 px-3 py-1.5 text-sm text-red-700 hover:bg-red-50 disabled:opacity-40"
-        >
+        <button type="button" onClick={clearKeys} disabled={!hasAnyKey} className="btn btn--danger btn--sm">
           Effacer toutes les clés enregistrées
         </button>
       </div>

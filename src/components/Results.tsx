@@ -18,9 +18,9 @@ interface ResultsProps {
 type Tab = 'json' | 'text'
 
 const CONFIDENCE_STYLES: Record<StructuredDocument['confidence'], { label: string; className: string }> = {
-  high: { label: 'Confiance élevée', className: 'bg-emerald-100 text-emerald-800' },
-  medium: { label: 'Confiance moyenne', className: 'bg-amber-100 text-amber-800' },
-  low: { label: 'Confiance faible', className: 'bg-red-100 text-red-800' },
+  high: { label: 'Confiance élevée', className: 'chip--success' },
+  medium: { label: 'Confiance moyenne', className: 'chip--warning' },
+  low: { label: 'Confiance faible', className: 'chip--danger' },
 }
 
 export default function Results({ pages, json, fileName, structured, notice, onRetry }: ResultsProps) {
@@ -48,42 +48,34 @@ export default function Results({ pages, json, fileName, structured, notice, onR
     URL.revokeObjectURL(url)
   }
 
-  const tabClass = (t: Tab) =>
-    [
-      'rounded-t-lg border-b-2 px-4 py-2 text-sm font-medium transition',
-      tab === t ? 'border-indigo-600 text-indigo-700' : 'border-transparent text-slate-500 hover:text-slate-800',
-    ].join(' ')
-
   return (
-    <section className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm" aria-label="Résultats">
+    <section className="glass-lite card appear flex flex-col gap-4" aria-label="Résultats">
       {notice && (
         <div
           role={notice.tone === 'error' ? 'alert' : 'status'}
-          className={[
-            'mb-3 flex flex-wrap items-center justify-between gap-2 rounded-lg px-3 py-2 text-sm',
-            notice.tone === 'error' ? 'bg-red-50 text-red-700' : 'bg-amber-50 text-amber-800',
-          ].join(' ')}
+          className={`alert flex-wrap items-center justify-between ${notice.tone === 'error' ? 'alert--error' : 'alert--warning'}`}
         >
           <span data-testid="notice">{notice.message}</span>
           {onRetry && (
-            <button type="button" onClick={onRetry} className="rounded-md border border-current px-2 py-1 text-xs font-medium">
+            <button type="button" onClick={onRetry} className="btn btn--sm">
               Relancer la structuration
             </button>
           )}
         </div>
       )}
       {doc && (
-        <div className="mb-4 space-y-2" data-testid="summary">
-          <div className="flex flex-wrap items-center gap-2 text-xs font-medium">
-            <span className="rounded-full bg-indigo-100 px-2.5 py-1 uppercase tracking-wide text-indigo-800">{doc.document_type}</span>
-            {doc.language && <span className="rounded-full bg-slate-100 px-2.5 py-1 uppercase text-slate-700">{doc.language}</span>}
-            <span className={`rounded-full px-2.5 py-1 ${CONFIDENCE_STYLES[doc.confidence].className}`}>
-              {CONFIDENCE_STYLES[doc.confidence].label}
-            </span>
-          </div>
-          <p className="text-slate-700">{doc.summary}</p>
+        <div className="flex flex-col gap-3" data-testid="summary">
+          <ul className="m-0 flex list-none flex-wrap items-center gap-1.5 p-0">
+            <li className="chip chip--accent font-medium uppercase tracking-[0.06em]">
+              <span className="dot" aria-hidden="true" />
+              {doc.document_type}
+            </li>
+            {doc.language && <li className="chip uppercase">{doc.language}</li>}
+            <li className={`chip ${CONFIDENCE_STYLES[doc.confidence].className}`}>{CONFIDENCE_STYLES[doc.confidence].label}</li>
+          </ul>
+          <p className="m-0 text-[15px] leading-relaxed text-muted">{doc.summary}</p>
           {doc.warnings.length > 0 && (
-            <ul className="list-inside list-disc rounded-lg bg-amber-50 px-3 py-2 text-sm text-amber-900">
+            <ul className="alert alert--warning m-0 list-inside list-disc flex-col gap-1">
               {doc.warnings.map((w, i) => (
                 <li key={i}>{w}</li>
               ))}
@@ -91,48 +83,45 @@ export default function Results({ pages, json, fileName, structured, notice, onR
           )}
         </div>
       )}
-      <div className="flex flex-wrap items-end justify-between gap-2 border-b border-slate-200">
-        <div role="tablist" className="flex">
-          <button role="tab" aria-selected={tab === 'json'} className={tabClass('json')} onClick={() => setTab('json')}>
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <div role="tablist" className="tabs" aria-label="Format du résultat">
+          <button role="tab" aria-selected={tab === 'json'} className="tab" onClick={() => setTab('json')}>
+            <span className="dot" aria-hidden="true" />
             JSON structuré
           </button>
-          <button role="tab" aria-selected={tab === 'text'} className={tabClass('text')} onClick={() => setTab('text')}>
+          <button role="tab" aria-selected={tab === 'text'} className="tab" onClick={() => setTab('text')}>
+            <span className="dot" aria-hidden="true" />
             Texte OCR brut
           </button>
         </div>
-        <div className="flex gap-2 pb-2">
-          <button
-            type="button"
-            onClick={copy}
-            className="rounded-lg border border-slate-300 px-3 py-1.5 text-sm hover:bg-slate-50"
-          >
+        <div className="flex flex-wrap gap-2">
+          <button type="button" onClick={copy} className="btn btn--sm">
             {copied === 'ok' ? 'Copié ✓' : copied === 'error' ? 'Copie impossible' : 'Copier'}
           </button>
-          <button
-            type="button"
-            onClick={download}
-            className="rounded-lg bg-slate-900 px-3 py-1.5 text-sm text-white hover:bg-slate-700"
-          >
+          <button type="button" onClick={download} className="btn btn--primary btn--sm">
+            <svg width="14" height="14" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+              <path d="M8 2.5v8m0 0L4.5 7M8 10.5L11.5 7M3 13.5h10" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
+            </svg>
             Télécharger .json
           </button>
         </div>
       </div>
 
-      <div className="pt-4" role="tabpanel">
+      <div role="tabpanel">
         {tab === 'json' ? (
           <JsonViewer json={json} />
         ) : (
-          <div className="space-y-4" data-testid="ocr-text">
+          <div className="flex flex-col gap-4" data-testid="ocr-text">
             {pages.map((p) => (
-              <div key={p.page}>
-                <div className="mb-1 flex justify-between text-xs text-slate-500">
-                  <span>Page {p.page}</span>
-                  <span>
+              <div key={p.page} className="flex flex-col gap-1.5">
+                <div className="flex justify-between gap-3 px-1 text-xs text-faint">
+                  <span className="eyebrow">Page {p.page}</span>
+                  <span className="font-mono">
                     {p.confidence === null ? 'confiance non fournie' : `confiance ${Math.round(p.confidence * 100)} %`}
                   </span>
                 </div>
-                <pre className="max-h-96 overflow-auto whitespace-pre-wrap rounded-lg bg-slate-50 p-3 text-sm text-slate-800">
-                  {p.text || <span className="italic text-slate-400">(aucun texte détecté)</span>}
+                <pre className="code-block max-h-96 whitespace-pre-wrap break-words text-muted">
+                  {p.text || <span className="italic text-faint">(aucun texte détecté)</span>}
                 </pre>
               </div>
             ))}

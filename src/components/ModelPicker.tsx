@@ -53,8 +53,8 @@ export default function ModelPicker({ provider, apiKey, value, onChange }: Model
   const canLoad = provider === 'openrouter' || Boolean(apiKey)
 
   return (
-    <div className="space-y-1">
-      <label htmlFor="model" className="block text-sm font-medium text-slate-700">
+    <div className="field">
+      <label htmlFor="model" className="label">
         Modèle
       </label>
       <div className="flex flex-wrap gap-2">
@@ -68,7 +68,7 @@ export default function ModelPicker({ provider, apiKey, value, onChange }: Model
               onChange(e.target.value)
             }
           }}
-          className="min-w-0 flex-1 rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm"
+          className="input min-w-0 flex-1 basis-56"
         >
           {options.map((o) => (
             <option key={o.id} value={o.id}>
@@ -83,7 +83,7 @@ export default function ModelPicker({ provider, apiKey, value, onChange }: Model
             onClick={() => void load()}
             disabled={!canLoad || loading}
             title={canLoad ? undefined : 'Enregistrez d’abord une clé'}
-            className="rounded-lg border border-slate-300 px-3 py-2 text-sm hover:bg-slate-50 disabled:opacity-40"
+            className="btn"
           >
             {loading ? 'Chargement…' : 'Charger les modèles du compte'}
           </button>
@@ -95,14 +95,14 @@ export default function ModelPicker({ provider, apiKey, value, onChange }: Model
           value={value}
           onChange={(e) => onChange(e.target.value.trim())}
           placeholder="identifiant exact du modèle"
-          className="w-full rounded-lg border border-slate-300 px-3 py-2 font-mono text-sm"
+          className="input input--mono"
         />
       )}
-      {provider === 'openrouter' && loading && <p className="text-xs text-slate-500">Chargement de la liste OpenRouter…</p>}
+      {provider === 'openrouter' && loading && <p className="hint">Chargement de la liste OpenRouter…</p>}
       {loaded[provider] && (
-        <p className="text-xs text-slate-500">{loaded[provider]!.length} modèles disponibles.</p>
+        <p className="hint">{loaded[provider]!.length} modèles disponibles.</p>
       )}
-      {error && <p className="text-xs text-red-600">{error}</p>}
+      {error && <p className="hint text-danger">{error}</p>}
     </div>
   )
 }

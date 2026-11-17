@@ -3,12 +3,12 @@ import { useMemo } from 'react'
 type TokenKind = 'key' | 'string' | 'number' | 'boolean' | 'null' | 'punct'
 
 const TOKEN_CLASSES: Record<TokenKind, string> = {
-  key: 'text-sky-300',
-  string: 'text-emerald-300',
-  number: 'text-amber-300',
-  boolean: 'text-fuchsia-300',
-  null: 'text-slate-400 italic',
-  punct: 'text-slate-400',
+  key: 'tok-key',
+  string: 'tok-string',
+  number: 'tok-number',
+  boolean: 'tok-boolean',
+  null: 'tok-null',
+  punct: 'tok-punct',
 }
 
 // Chaînes (éventuellement suivies de « : » pour une clé), nombres, littéraux, ponctuation.
@@ -37,7 +37,7 @@ function tokenize(json: string): { text: string; kind?: TokenKind }[] {
 export default function JsonViewer({ json }: { json: string }) {
   const tokens = useMemo(() => tokenize(json), [json])
   return (
-    <pre className="max-h-[32rem] overflow-auto rounded-lg bg-slate-900 p-4 text-sm leading-relaxed text-slate-100">
+    <pre className="code-block max-h-[32rem]">
       <code data-testid="json-output">
         {tokens.map((t, i) =>
           t.kind ? (

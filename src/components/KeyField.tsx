@@ -17,11 +17,11 @@ export default function KeyField({ label, value, onSave, keyUrl, placeholder }: 
 
   if (value) {
     return (
-      <div className="flex flex-wrap items-center justify-between gap-2 rounded-lg bg-emerald-50 px-3 py-2 text-sm">
-        <span className="text-emerald-800">
-          {label} enregistrée : <code className="font-mono">{maskKey(value)}</code>
+      <div className="alert alert--success flex-wrap items-center justify-between">
+        <span>
+          {label} enregistrée : <code className="text-[12.5px] text-text">{maskKey(value)}</code>
         </span>
-        <button type="button" onClick={() => onSave(null)} className="text-emerald-700 underline hover:text-emerald-900">
+        <button type="button" onClick={() => onSave(null)} className="link-btn text-[13px]">
           Supprimer
         </button>
       </div>
@@ -30,7 +30,7 @@ export default function KeyField({ label, value, onSave, keyUrl, placeholder }: 
 
   return (
     <form
-      className="space-y-1"
+      className="field"
       onSubmit={(e) => {
         e.preventDefault()
         if (draft.trim()) {
@@ -39,14 +39,14 @@ export default function KeyField({ label, value, onSave, keyUrl, placeholder }: 
         }
       }}
     >
-      <label htmlFor={id} className="block text-sm font-medium text-slate-700">
+      <label htmlFor={id} className="label">
         {label}{' '}
-        <a href={keyUrl} target="_blank" rel="noreferrer" className="font-normal text-indigo-600 underline">
+        <a href={keyUrl} target="_blank" rel="noreferrer" className="text-[12.5px] font-normal text-muted">
           (obtenir une clé)
         </a>
       </label>
-      <div className="flex gap-2">
-        <div className="relative flex-1">
+      <div className="flex flex-wrap gap-2 sm:flex-nowrap">
+        <div className="relative min-w-0 flex-1 basis-48">
           <input
             id={id}
             type={visible ? 'text' : 'password'}
@@ -55,21 +55,17 @@ export default function KeyField({ label, value, onSave, keyUrl, placeholder }: 
             value={draft}
             onChange={(e) => setDraft(e.target.value)}
             placeholder={placeholder}
-            className="w-full rounded-lg border border-slate-300 px-3 py-2 pr-16 font-mono text-sm focus:border-indigo-500 focus:outline-none"
+            className="input input--mono pr-20"
           />
           <button
             type="button"
             onClick={() => setVisible((v) => !v)}
-            className="absolute inset-y-0 right-2 text-xs text-slate-500 hover:text-slate-800"
+            className="btn btn--ghost btn--sm absolute inset-y-1 right-1 min-h-0 px-2.5 text-xs"
           >
             {visible ? 'Masquer' : 'Afficher'}
           </button>
         </div>
-        <button
-          type="submit"
-          disabled={!draft.trim()}
-          className="rounded-lg bg-slate-900 px-3 py-2 text-sm text-white hover:bg-slate-700 disabled:opacity-40"
-        >
+        <button type="submit" disabled={!draft.trim()} className="btn">
           Enregistrer
         </button>
       </div>
