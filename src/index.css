@@ -1213,3 +1213,15 @@
     }
   }
 }
+
+/* Conteneurs bento plus transparents et moins flous : l'animation de fond reste visible
+   derrière (le JSON et les champs gardent leur propre fond sombre, donc restent lisibles). */
+@layer components {
+  .tile.glass-lite {
+    -webkit-backdrop-filter: blur(2px);
+    backdrop-filter: blur(2px);
+    background:
+      linear-gradient(180deg, rgba(255, 255, 255, 0.04) 0%, rgba(255, 255, 255, 0) 40%),
+      rgba(14, 18, 28, 0.42);
+  }
+}

@@ -55,10 +55,10 @@ export interface DocToJsonConfig {
 export const DOC_TO_JSON: DocToJsonConfig = {
   colors: { text: 'var(--accent)', key: 'var(--accent)', scan: '#d4c2ff' },
   alpha: { frame: 0.32, text: 0.5, key: 1 },
-  opacity: 0.5,
-  fontSize: 14,
+  opacity: 0.7,
+  fontSize: 26,
   minFontSize: 7,
-  mobileFontSize: 10,
+  mobileFontSize: 12,
   mobileBreakpoint: 640,
   lineHeight: 1.4,
   fontFamily: 'ui-monospace, "SFMono-Regular", "Cascadia Mono", Consolas, "Liberation Mono", Menlo, monospace',
